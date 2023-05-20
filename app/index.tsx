@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar'
-import { ImageBackground, Text, TouchableOpacity, View } from 'react-native'
-import { styled } from 'nativewind'
-import { makeRedirectUri, useAuthRequest } from 'expo-auth-session'
 import { useEffect } from 'react'
+import { ImageBackground, Text, TouchableOpacity, View } from 'react-native'
+import { makeRedirectUri, useAuthRequest } from 'expo-auth-session'
+import { styled } from 'nativewind'
 import * as SecureStore from 'expo-secure-store'
+import { useRouter } from 'expo-router'
 import {
   useFonts,
   Roboto_400Regular,
@@ -25,13 +26,15 @@ const discovery = {
 }
 
 export default function App() {
+  const router = useRouter()
+
   const [hasLoadedFonts] = useFonts({
     Roboto_400Regular,
     Roboto_700Bold,
     BaiJamjuree_700Bold,
   })
 
-  const [response, signInWithGithub] = useAuthRequest(
+  const [, response, signInWithGithub] = useAuthRequest(
     {
       clientId: '96f8673d606ebe9440f2',
       scopes: ['identity'],
@@ -41,6 +44,18 @@ export default function App() {
     },
     discovery,
   )
+
+  async function handleGithubOAuthCode(code: string) {
+    const response = await api.post('/register', {
+      code,
+    })
+
+    const { token } = response.data
+
+    await SecureStore.setItemAsync('token', token)
+
+    router.push('')
+  }
 
   useEffect(() => {
     /**
@@ -53,19 +68,7 @@ export default function App() {
      */
     if (response?.type === 'success') {
       const { code } = response.params
-
-      api
-        .post('/register', {
-          code,
-        })
-        .then((response) => {
-          const { token } = response.data
-
-          SecureStore.setItemAsync('token', token)
-        })
-        .catch((err) => {
-          console.error(err)
-        })
+      handleGithubOAuthCode(code)
     }
   }, [response])
 
