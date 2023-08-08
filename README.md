@@ -8,7 +8,7 @@
 
 ## 💻 Projeto
 
-WORK IN PROGRESS
+Um projeto feito para cadastrar items para sua capsula do tempo do spacetime nlw
 
 ## ✨ Tecnologia
 
